@@ -3,7 +3,8 @@ module.exports = {
         "browser": true,
         "commonjs": true,
         "es6": true,
-        "node": true
+        "node": true,
+        "jest": true
     },
     "extends": "eslint:recommended",
     "parserOptions": {
@@ -27,6 +28,6 @@ module.exports = {
             "always"
         ],
         'no-console': 'off',
-        'no-unused-vars':'off'
+        'no-unused-vars': 'off'
     }
 };

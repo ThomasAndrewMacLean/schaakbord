@@ -1,21 +1,8 @@
 {
     "compilerOptions": {
-        "allowJs": true, // <-- Should allow .js as entry file
-        "checkJs": true,
-        "target": "es2015",
-        "module": "commonjs",
-        "removeComments": false,
         "lib": [
-            "es2015"
-        ],
-        "allowSyntheticDefaultImports": true,
-        "moduleResolution": "node",
-        "baseUrl": "src/"
-    },
-    "include": [
-        "src/*"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+            "es2016",
+            "dom"
+        ]
+    }
 }

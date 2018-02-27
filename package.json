@@ -4,7 +4,9 @@
   "description": "simpel schaakbord ",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --watch",
+    "start": "webpack-dev-server",
+    "build": "webpack -p"
   },
   "repository": {
     "type": "git",
@@ -15,5 +17,15 @@
   "bugs": {
     "url": "https://github.com/ThomasAndrewMacLean/schaakbord/issues"
   },
-  "homepage": "https://github.com/ThomasAndrewMacLean/schaakbord#readme"
+  "homepage": "https://github.com/ThomasAndrewMacLean/schaakbord#readme",
+  "devDependencies": {
+    "jest": "^22.4.2",
+    "webpack": "^4.0.1",
+    "webpack-cli": "^2.0.9",
+    "webpack-dev-server": "^3.0.0"
+  },
+  "dependencies": {
+    "css-loader": "^0.28.10",
+    "style-loader": "^0.20.2"
+  }
 }
