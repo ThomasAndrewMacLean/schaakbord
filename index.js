@@ -34,7 +34,6 @@ const startNewGame = () => {
     board[14] = pieces.blackPawn;
     board[15] = pieces.blackPawn;
 
-
     board[48] = pieces.whitePawn;
     board[49] = pieces.whitePawn;
     board[50] = pieces.whitePawn;
@@ -52,11 +51,15 @@ const startNewGame = () => {
     board[61] = pieces.whiteBishop;
     board[62] = pieces.whiteKnight;
     board[63] = pieces.whiteRook;
+
+    const sb = document.querySelector('schaak-bord');
+    sb.innerHTML = '';
+    sb.clearBoard();
 };
 
 (function () {
 
-    console.log('innit');
+    console.log('start iiffee');
 })();
 
 
@@ -65,6 +68,20 @@ class Schaakbord extends HTMLElement {
     constructor() {
         super();
         startNewGame();
+
+    }
+
+
+    clickCell(c) {
+        if (!this.selectedPiece) {
+            this.selectedPiece = c;
+        } else {
+            c.innerHTML = this.selectedPiece.innerHTML;
+            this.selectedPiece.innerHTML = '';
+            this.selectedPiece = null;
+        }
+    }
+    clearBoard() {
         let wrapper = document.createElement('div');
         wrapper.classList.add('wrapper');
         this.appendChild(wrapper);
@@ -72,12 +89,11 @@ class Schaakbord extends HTMLElement {
         board.forEach(cell => {
             let d = document.createElement('div');
             d.classList.add('cell');
+            d.addEventListener('click', (e) => this.clickCell(e.target));
             cell ? d.innerHTML = cell : d.innerHTML = '';
             wrapper.appendChild(d);
         });
-
-
-
+        let selectedPiece = null;
     }
 }
 
