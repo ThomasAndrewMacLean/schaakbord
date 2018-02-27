@@ -1,4 +1,4 @@
-import './styles.css';
+import '../css/styles.scss';
 
 import {
     Reken
