@@ -1,5 +1,4 @@
 # schaakbord
 
-start script: livereload
-
-(https://pypi.python.org/pypi/livereload)
+start script: npm start
+test script: npm run test-dev

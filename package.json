@@ -4,7 +4,8 @@
   "description": "simpel schaakbord ",
   "main": "index.js",
   "scripts": {
-    "test": "jest --watch",
+    "test": "jest",
+    "test-dev": "jest --watch",
     "start": "webpack-dev-server --mode development",
     "build": "webpack -p"
   },
