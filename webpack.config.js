@@ -1,3 +1,5 @@
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HTMLPlugin = require('html-webpack-plugin');
 const path = require('path');
 // const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
@@ -10,7 +12,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js',
-        publicPath: '/dist'
+        // publicPath: '/dist'
     },
     module: {
         rules: [{
@@ -20,5 +22,13 @@ module.exports = {
 
         }]
     },
+
+    plugins: [new HTMLPlugin({
+        template: 'index.html',
+        filename: 'index.html'
+    }),
+    new CleanWebpackPlugin(['dist'])
+    ]
+
 
 };
