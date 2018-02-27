@@ -1,7 +1,6 @@
-//let x = require('../reken');
 import {
     Reken
-} from '../src/reken';
+} from '../src/js/reken';
 test('create schaakbord', () => {
 
 
