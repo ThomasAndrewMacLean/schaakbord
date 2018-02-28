@@ -10,7 +10,7 @@ export class Schaakbord extends HTMLElement {
     constructor() {
         super();
         console.log('CONSTR');
-
+        this.reken = new Reken();
         this.t = 'xxx';
         this.pieces = {
             whiteKing: '&#9812;',
@@ -77,6 +77,9 @@ export class Schaakbord extends HTMLElement {
     }
 
     clickCell(c, i) {
+
+        console.log(this.reken.getBoardNumber(i));
+
 
         let piece = Object.keys(this.pieces).find(x => {
             return this.pieces[x].substr(2, 4).toString() === c.innerHTML.charCodeAt(0).toString();
