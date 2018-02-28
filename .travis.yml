@@ -8,7 +8,6 @@ notifications:
   - thomas.maclean@gmail.com
 deploy:
   provider: s3
-  access_key_id: AKIAJOCKECEBQRTU2XUA
-  secret_access_key:
-    secure: e/Xo5qAgNleK7wB0yerMObLwd22AToGwWJikJ1Auel51V+lmB49Yh31nprIFU2JtazzHUT6Knispn9/bOk5ml/s45YRivMACpt8PaM+XmrGpM6+SIYFJ0TiN0PPCqUwdO3EH9NC8CaLRoQqcmdRPSchAbin9HovBti6wKtMMM3Aky945/CGMzXpFnzqj6Oeln0IVMpzZRit5HkrAEjxl2u3+U9iuYLsvCvNN7+zsjS143QXGsEY82KjlVwQ5RWj4iHmftBy1yl7e1WCrO2HY416h/SDMZ3f4r41bHsv7OZaPlJdO30dfzFGtyysf1n4S8wgEgjZZCji9AXgwzwRcpp7tsKpgPGPKSTB7xIjp1qijkYaaU1fYr8tcNb5GvFr5xXh7otPJRZLRrgkx7J93mYiDFtnPQi7EoUmDddBvSuqoHDSBQx+DAuYw+eBZ/pOcFbDuBVDuM/cmUm4zgjZkOeMVkUHOobLXBM9rtG8Nx0zcjfmTZOFXRs72uK3RnmcjTUP7PFlItNqrblF8WoQmDthn6LV1gi23/G7SqF5/HHkJQzAiF/MKqN2MXfRxLeKll+bVZg83BncRhn2xE8s8+/pvstzz4H8VEMpCG/IAUqs8q1zn06S5Vwozaa7HwTPh5cSFNoeRpvJOqzaGNblr0vVH/RuadyEQvDQyzTl/zYw=
+  access_key_id: $AWS_ACCESS_KEY_ID
+  secret_access_key: $AWS_SECRET_ACCESS_KEY
   bucket: www.schaakbord.be
