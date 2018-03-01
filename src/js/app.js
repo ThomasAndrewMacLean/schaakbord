@@ -8,10 +8,13 @@ import io from 'socket.io-client';
 const socket = io('http://localhost:8080');
 // socket.emit('test', 'hello');
 
-socket.on('return', (data) => {
-    console.log(data);
+if (socket !== undefined) {
 
-});
+    socket.on('return', (data) => {
+        console.log(data);
+
+    });
+}
 
 document.getElementById('signupbtn').addEventListener('click', signup);
 
