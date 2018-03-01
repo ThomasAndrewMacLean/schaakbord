@@ -4,6 +4,61 @@ import {
     Reken
 } from './reken';
 
+import io from 'socket.io-client';
+const socket = io('http://localhost:8080');
+// socket.emit('test', 'hello');
+
+socket.on('return', (data) => {
+    console.log(data);
+
+});
+
+document.getElementById('signupbtn').addEventListener('click', signup);
+
+document.getElementById('sendbtn').addEventListener('click', send);
+
+function send() {
+    const msg = document.getElementById('message');
+    socket.emit('test', msg.value);
+    msg.value = '';
+}
+
+
+function signup() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const url = 'https://obscure-thicket-57329.herokuapp.com/signup'; //TODO: in env steken
+    console.log(email + '-' + password);
+
+    fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `email=${email}&password=${password}`
+    });
+
+}
+document.getElementById('loginbtn').addEventListener('click', login);
+
+
+function login() {
+    const email = document.getElementById('loginemail').value;
+    const password = document.getElementById('loginpassword').value;
+    const url = 'https://obscure-thicket-57329.herokuapp.com/login'; //TODO: in env steken
+    console.log(email + '-' + password);
+
+    fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `email=${email}&password=${password}`
+    });
+
+}
 
 export class Schaakbord extends HTMLElement {
 
