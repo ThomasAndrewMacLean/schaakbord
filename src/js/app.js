@@ -16,7 +16,6 @@ if (socket !== undefined) {
     });
 }
 
-document.getElementById('signupbtn').addEventListener('click', signup);
 
 document.getElementById('sendbtn').addEventListener('click', send);
 
@@ -26,6 +25,7 @@ function send() {
     msg.value = '';
 }
 
+document.getElementById('signupbtn').addEventListener('click', signup);
 
 function signup() {
     const email = document.getElementById('email').value;
@@ -40,7 +40,7 @@ function signup() {
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: `email=${email}&password=${password}`
-    });
+    }).then(d => console.log(d));
 
 }
 document.getElementById('loginbtn').addEventListener('click', login);

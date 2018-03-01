@@ -7,7 +7,8 @@
     "test": "jest",
     "test-dev": "jest --watch",
     "start": "webpack-dev-server --mode development",
-    "build": "webpack -p"
+    "build": "webpack -p",
+    "deploy": "webpack -p && /Users/tmacair/Library/Python/2.7/bin/aws s3 cp --recursive ./dist s3://www.schaakbord.be"
   },
   "repository": {
     "type": "git",
