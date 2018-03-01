@@ -30,11 +30,14 @@ document.getElementById('signupbtn').addEventListener('click', signup);
 function signup() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    const url = 'https://obscure-thicket-57329.herokuapp.com/signup'; //TODO: in env steken
+    //  const url = 'https://obscure-thicket-57329.herokuapp.com/signup'; //TODO: in env steken
+    const url = 'http://localhost:8080/signup'; //TODO: in env steken
+
     console.log(email + '-' + password);
 
     fetch(url, {
         method: 'POST',
+        credentials: 'include',
         mode: 'no-cors',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
