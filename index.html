@@ -10,40 +10,62 @@
 </head>
 
 <body>
+    <div class="container">
+        <div id="toaster">toastie</div>
+        <div id="landing">
+            <div class="login">
+                <div>
+                    <label>Email</label>
+                    <input type="text" class="form-control" id="email">
+                </div>
+                <div class="small-padding-top">
+                    <label>Password</label>
+                    <input type="password" class="form-control" id="password">
+                </div>
 
-    <div>MESSAGEING</div>
-    <input type="text" class="form-control" id="message">
-    <button id="sendbtn" class="btn btn-warning btn-lg">Send</button>
+                <button id="signupbtn" class="btn btn-warning btn-lg">Signup</button>
+                <button id="loginbtn" class="btn btn-warning btn-lg">Login</button>
 
 
-    <div>
-        <label>Email</label>
-        <input type="text" class="form-control" id="email">
+            </div>
+
+        </div>
+        <div id="signed-in" style="display:none">
+            <div class="card">
+                <h4>Login</h4>
+            </div>
+
+            <div class="card">
+                <h4>Sign In</h4>
+            </div>
+
+            <div class="card">
+                <h4>Username</h4>
+            </div>
+            <div class="card">
+                <h4>Sign Out</h4>
+            </div>
+
+            <div>TEST CONNECTION</div>
+            <button id="testbtn">test</button>
+            <button id="deletebtn">delete</button>
+            <div>MESSAGEING</div>
+            <input type="text" class="form-control" id="message">
+            <button id="sendbtn" class="btn btn-warning btn-lg">Send</button>
+
+
+
+            <h1>board</h1>
+            <button onclick="startNewGame()">New Game</button>
+            <!-- <schaak-bord></schaak-bord> -->
+
+        </div>
     </div>
-    <div>
-        <label>Password</label>
-        <input type="password" class="form-control" id="password">
+    <div>Icons made by
+        <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from
+        <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by
+        <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>
     </div>
-
-    <button id="signupbtn" class="btn btn-warning btn-lg">Signup</button>
-
-    <div>
-        <label>Email</label>
-        <input type="text" class="form-control" id="loginemail">
-    </div>
-    <div>
-        <label>Password</label>
-        <input type="password" class="form-control" id="loginpassword">
-    </div>
-
-    <button id="loginbtn" class="btn btn-warning btn-lg">Login</button>
-
-    <h1>board</h1>
-    <button onclick="startNewGame()">New Game</button>
-    <schaak-bord></schaak-bord>
-
-
-
 </body>
 
 </html>

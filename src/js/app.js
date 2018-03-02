@@ -5,7 +5,10 @@ import {
 } from './reken';
 
 import io from 'socket.io-client';
-const socket = io('http://localhost:8080');
+
+let server = 'https://obscure-thicket-57329.herokuapp.com';
+
+const socket = io(server);
 // socket.emit('test', 'hello');
 
 if (socket !== undefined) {
@@ -15,6 +18,26 @@ if (socket !== undefined) {
 
     });
 }
+
+
+
+(function () {
+    if (document.URL.includes('localhost')) {
+        server = 'http://localhost:8080';
+    }
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js');
+    }
+
+    console.log('start!');
+    const url = server + '/testLogin'; //TODO: in env steken
+    fetch(url, {
+        credentials: 'include',
+    }).then(x => {
+        x.json().then(x => console.log(x));
+    });
+})();
 
 
 document.getElementById('sendbtn').addEventListener('click', send);
@@ -27,43 +50,111 @@ function send() {
 
 document.getElementById('signupbtn').addEventListener('click', signup);
 
+document.getElementById('testbtn').addEventListener('click', test);
+
+document.getElementById('deletebtn').addEventListener('click', delete_cookie);
+
+function delete_cookie() {
+    const url = server + '/deleteCookie';
+
+    fetch(url, {
+        credentials: 'include',
+        // mode: 'no-cors'
+
+        // Access-Control-Allow-Credentials: true
+    }).then(x => {
+        x.json().then(x => console.log(x));
+    });
+}
+
+function test() {
+    const url = server + '/testLogin';
+
+    fetch(url, {
+        credentials: 'include',
+        // mode: 'no-cors'
+
+        // Access-Control-Allow-Credentials: true
+    }).then(x => {
+        x.json().then(x => console.log(x));
+    });
+}
+
 function signup() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     //  const url = 'https://obscure-thicket-57329.herokuapp.com/signup'; //TODO: in env steken
-    const url = 'http://localhost:8080/signup'; //TODO: in env steken
+    const url = server + '/signup'; //TODO: in env steken
 
     console.log(email + '-' + password);
 
     fetch(url, {
         method: 'POST',
         credentials: 'include',
-        mode: 'no-cors',
+        //  mode: 'no-cors',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: `email=${email}&password=${password}`
-    }).then(d => console.log(d));
+    }).then(d => {
+        if (d.status === 200) {
+            logonSucces();
+        } else {
+            toastie(d);
+        }
+    });
 
 }
 document.getElementById('loginbtn').addEventListener('click', login);
 
 
 function login() {
-    const email = document.getElementById('loginemail').value;
-    const password = document.getElementById('loginpassword').value;
-    const url = 'https://obscure-thicket-57329.herokuapp.com/login'; //TODO: in env steken
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    //   const url = 'https://obscure-thicket-57329.herokuapp.com/login'; //TODO: in env steken
+    const url = server + '/login'; //TODO: in env steken
+
     console.log(email + '-' + password);
 
     fetch(url, {
         method: 'POST',
-        mode: 'no-cors',
+        // mode: 'no-cors',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: `email=${email}&password=${password}`
+    }).then(d => {
+        if (d.status === 200) {
+            logonSucces();
+        } else {
+            toastie(d);
+        }
     });
 
+}
+
+function toastie(err) {
+    err.json().then(x => {
+        const errMsg = x.err;
+        const toaster = document.getElementById('toaster');
+        toaster.innerHTML = errMsg;
+        toaster.classList.add('showtoast');
+        setTimeout(() => {
+            const toaster = document.getElementById('toaster');
+            toaster.classList.remove('showtoast');
+        }, 5000);
+    });
+}
+
+
+
+function logonSucces() {
+    const landing = document.getElementById('landing');
+    const signedIn = document.getElementById('signed-in');
+
+    landing.style.display = 'none';
+    signedIn.style.display = 'block';
 }
 
 export class Schaakbord extends HTMLElement {
