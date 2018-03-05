@@ -1,5 +1,5 @@
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-
+const VersionFile = require('webpack-version-file');
 const HTMLPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
@@ -29,14 +29,16 @@ module.exports = env => {
             }]
         },
 
-        plugins: [new HTMLPlugin({
-            template: 'index.html',
-            filename: 'index.html'
-        }),
-        new CleanWebpackPlugin(['dist']),
-        new CopyWebpackPlugin([{
-            from: 'sw'
-        }])
+        plugins: [
+            new HTMLPlugin({
+                template: 'index.html',
+                filename: 'index.html'
+            }),
+            new CleanWebpackPlugin(['dist']),
+            new CopyWebpackPlugin([{
+                from: 'sw'
+            }]),
+            new VersionFile()
         ]
 
 

@@ -8,113 +8,175 @@ import io from 'socket.io-client';
 
 let server = 'https://obscure-thicket-57329.herokuapp.com';
 
-const socket = io(server);
-// socket.emit('test', 'hello');
 
-if (socket !== undefined) {
 
-    socket.on('return', (data) => {
-        console.log(data);
+let globalData = {};
 
-    });
+function updateScroll() {
+    var element = document.getElementById('msg-brd');
+    element.scrollTop = element.scrollHeight;
 }
 
-
-
 (function () {
+    console.log('start! screen (w x h): ' + screen.width + 'x' + screen.height);
     if (document.URL.includes('localhost')) {
         server = 'http://localhost:8080';
     }
 
+    const socket = io(server);
+    // socket.emit('test', 'hello');
+
+    if (socket !== undefined) {
+
+        socket.on('return', (data) => {
+            console.log(data);
+
+            const msgBrd = document.getElementById('msg-brd');
+
+            let msgwrap = document.createElement('span');
+            msgwrap.classList.add('msg');
+            data.user === globalData.user ? msgwrap.classList.add('my-msg') : msgwrap.classList.add('other-msg');
+
+            msgwrap.innerHTML = `<div class="msg-user">${data.user}</div> ${data.msg}`;
+            msgBrd.appendChild(msgwrap);
+            updateScroll();
+
+        });
+    }
+
+
+    function send(e) {
+        e.preventDefault();
+        const msg = document.getElementById('message');
+        if (msg.value) {
+            socket.emit('send-msg', {
+                'msg': msg.value,
+                'cookie': localStorage.getItem('cookie')
+            });
+            msg.value = '';
+        }
+    }
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js');
     }
 
-    console.log('start!');
-    const url = server + '/testLogin'; //TODO: in env steken
-    fetch(url, {
-        credentials: 'include',
-    }).then(x => {
-        x.json().then(x => console.log(x));
-    });
+    document.getElementById('sendbtn').addEventListener('click', send);
+    document.getElementById('signupbtn').addEventListener('click', signup);
+    document.getElementById('deletebtn').addEventListener('click', delete_cookie);
+    document.getElementById('loginbtn').addEventListener('click', login);
+    document.getElementById('newgamebtn').addEventListener('click', goToPage);
+    document.getElementById('backtohomebtn').addEventListener('click', goToPage);
+
+
+    let iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const url = server + '/testLogin';
+
+    if (iOS) {
+        let cookie = localStorage.getItem('cookie');
+        fetch(url + 'IOS', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                cookie: cookie
+            }),
+        }).then(x => {
+            console.log(x);
+            logonSucces(x);
+        });
+    } else {
+        fetch(url, {
+            credentials: 'include',
+        }).then(x => {
+            logonSucces(x);
+        });
+    }
 })();
 
+function goToPage(newPageId) {
+    if (typeof newPageId !== 'string') {
+        newPageId = this.dataset.link;
+    }
+    const oldPage = document.querySelector('.show-hide-div:not(.hide-div)');
+    const newPage = document.getElementById(newPageId);
 
-document.getElementById('sendbtn').addEventListener('click', send);
+    newPage.style.left = '-100%';
+    newPage.classList.remove('hide-div');
+    newPage.classList.add('show-div');
 
-function send() {
-    const msg = document.getElementById('message');
-    socket.emit('test', msg.value);
-    msg.value = '';
+    oldPage.classList.add('hide-div');
+    oldPage.classList.add('show-leave-div');
+    oldPage.classList.remove('show-div');
+    oldPage.style.left = '100%';
+
+    setTimeout(() => {
+        const oldPage = document.querySelector('.show-leave-div');
+        oldPage.classList.remove('show-leave-div');
+        oldPage.style.left = '-100px';
+    }, 1000);
 }
 
-document.getElementById('signupbtn').addEventListener('click', signup);
-
-document.getElementById('testbtn').addEventListener('click', test);
-
-document.getElementById('deletebtn').addEventListener('click', delete_cookie);
-
 function delete_cookie() {
+    if (globalData.busy) {
+        return;
+    }
+    globalData.busy = true;
     const url = server + '/deleteCookie';
 
     fetch(url, {
         credentials: 'include',
-        // mode: 'no-cors'
-
-        // Access-Control-Allow-Credentials: true
     }).then(x => {
-        x.json().then(x => console.log(x));
+        localStorage.cookie = '';
+        goToPage('landing');
+        setTimeout(() => globalData.busy = false, 1000);
+
     });
 }
 
-function test() {
-    const url = server + '/testLogin';
+function signup(e) {
+    e.preventDefault();
+    if (globalData.busy) {
+        return;
+    }
+    globalData.busy = true;
 
-    fetch(url, {
-        credentials: 'include',
-        // mode: 'no-cors'
-
-        // Access-Control-Allow-Credentials: true
-    }).then(x => {
-        x.json().then(x => console.log(x));
-    });
-}
-
-function signup() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    //  const url = 'https://obscure-thicket-57329.herokuapp.com/signup'; //TODO: in env steken
-    const url = server + '/signup'; //TODO: in env steken
-
-    console.log(email + '-' + password);
+    const url = server + '/signup';
 
     fetch(url, {
         method: 'POST',
         credentials: 'include',
-        //  mode: 'no-cors',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: `email=${email}&password=${password}`
     }).then(d => {
         if (d.status === 200) {
-            logonSucces();
+            logonSucces(d);
         } else {
             toastie(d);
         }
     });
 
 }
-document.getElementById('loginbtn').addEventListener('click', login);
 
+function login(e) {
+    console.log('login');
+    e.preventDefault();
 
-function login() {
+    if (globalData.busy) {
+        return;
+    }
+    globalData.busy = true;
+
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     //   const url = 'https://obscure-thicket-57329.herokuapp.com/login'; //TODO: in env steken
     const url = server + '/login'; //TODO: in env steken
 
-    console.log(email + '-' + password);
+    //  console.log(email + '-' + password);
 
     fetch(url, {
         method: 'POST',
@@ -126,8 +188,10 @@ function login() {
         body: `email=${email}&password=${password}`
     }).then(d => {
         if (d.status === 200) {
-            logonSucces();
+
+            logonSucces(d);
         } else {
+
             toastie(d);
         }
     });
@@ -135,8 +199,14 @@ function login() {
 }
 
 function toastie(err) {
+    console.log('error');
+    console.log(err);
+    globalData.busy = false;
     err.json().then(x => {
-        const errMsg = x.err;
+        console.log('TOASTIE');
+        console.log(x);
+        const errMsg = x.err || 'Something went wrong...';
+
         const toaster = document.getElementById('toaster');
         toaster.innerHTML = errMsg;
         toaster.classList.add('showtoast');
@@ -147,15 +217,23 @@ function toastie(err) {
     });
 }
 
+function logonSucces(data) {
+    data.json().then(x => {
+        console.log(x);
 
+        if (x.cookie) {
+            localStorage.cookie = x.cookie;
+        }
+        let user = x.user || document.getElementById('email').value || '';
+        globalData.user = user;
+        document.getElementById('user').innerHTML = user;
+        setTimeout(() => globalData.busy = false, 1000);
 
-function logonSucces() {
-    const landing = document.getElementById('landing');
-    const signedIn = document.getElementById('signed-in');
-
-    landing.style.display = 'none';
-    signedIn.style.display = 'block';
+        // globalData.busy = false;
+        goToPage('homepage');
+    });
 }
+
 
 export class Schaakbord extends HTMLElement {
 

@@ -6,66 +6,204 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>sBoard</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-startup-image" href="/checkmate.png">
+    <link rel="apple-touch-icon" href="/checkmate144.png" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="blue">
+    <meta name="apple-mobile-web-app-title" content="SCHKN">
 
+    <link rel="manifest" href="/manifest.json">
+    <!-- <script src="stay_standalone.js" type="text/javascript"></script> -->
+    <script type="text/javascript">
+        (function (document, navigator, standalone) {
+            // prevents links from apps from oppening in mobile safari
+            // this javascript must be the first script in your <head>
+            if ((standalone in navigator) && navigator[standalone]) {
+                var curnode, location = document.location,
+                    stop = /^(a|html)$/i;
+                document.addEventListener('click', function (e) {
+                    curnode = e.target;
+                    while (!(stop).test(curnode.nodeName)) {
+                        curnode = curnode.parentNode;
+                    }
+                    // Condidions to do this only on links to your own app
+                    // if you want all links, use if('href' in curnode) instead.
+                    if (
+                        'href' in curnode && // is a link
+                        (chref = curnode.href).replace(location.href, '').indexOf('#') && // is not an anchor
+                        (!(/^[a-z\+\.\-]+:/i).test(chref) || // either does not have a proper scheme (relative links)
+                            chref.indexOf(location.protocol + '//' + location.host) === 0) // or is in the same protocol and domain
+                    ) {
+                        e.preventDefault();
+                        location.href = curnode.href;
+                    }
+                }, false);
+            }
+        })(document, window.navigator, 'standalone');
+    </script>
+    <style>
+        body {
+            background: linear-gradient(141deg, turquoise 0%, #1fc8db 51%, #2cb5e8 75%);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .pagewrap {
+            clear: both;
+            display: flex;
+            justify-content: center;
+            align-content: center;
+        }
+
+        .card {
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.3);
+            margin-top: 60px;
+            padding: 15px;
+            width: 75%;
+        }
+
+        .hide-div {
+            left: -100% !important;
+        }
+
+        .show-leave-div {
+            left: 100% !important;
+            transition: left 1s ease-in-out;
+        }
+
+        .show-div {
+            left: 0 !important;
+            transition: left 1s ease-in-out;
+        }
+
+        .show-hide-div {
+            position: absolute;
+            width: 100vw;
+            opacity: 1;
+        }
+
+
+        .btn {
+            font-size: 20px;
+            font-family: "Ubuntu", sans-serif;
+            width: 100%;
+            float: left;
+            height: 45px;
+            border: none;
+            color: rgb(171, 238, 237);
+            background: rgba(0, 0, 0, 0.45);
+        }
+
+        .btn-45 {
+            width: 45%;
+        }
+
+        .btn-margin-top {
+            margin-top: 25px;
+        }
+
+        .btn-margin-right {
+            margin-right: 10%;
+        }
+
+        label {
+            padding-top: 15px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100vw;
+            height: 100vh;
+            overflow: auto;
+            margin: auto;
+        }
+
+
+        .small-padding-top {
+            padding-top: 10px;
+        }
+
+        .input-sign-in {
+            height: 61px;
+        }
+
+        input {
+
+            font-size: 20px;
+            height: 45px;
+            border: 0;
+            color: #333;
+            background: white;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
 </head>
 
 <body>
     <div class="container">
-        <div id="toaster">toastie</div>
-        <div id="landing">
-            <div class="login">
-                <div>
+        <div id="toaster"></div>
+        <div class="pagewrap show-hide-div show-div" id="landing">
+            <form class="card">
+                <div class="input-sign-in">
                     <label>Email</label>
                     <input type="text" class="form-control" id="email">
                 </div>
-                <div class="small-padding-top">
-                    <label>Password</label>
+                <div class="small-padding-top input-sign-in">
+                    <label>Password:</label>
                     <input type="password" class="form-control" id="password">
                 </div>
 
-                <button id="signupbtn" class="btn btn-warning btn-lg">Signup</button>
-                <button id="loginbtn" class="btn btn-warning btn-lg">Login</button>
+                <button type="button" class="btn btn-45 btn-margin-right btn-margin-top" id="signupbtn">Signup</button>
+                <button type="submit" class="btn btn-45 btn-margin-top" id="loginbtn">Login</button>
+            </form>
+        </div>
+
+        <div id="homepage" class="show-hide-div hide-div">
 
 
+            <button class="btn btn-50 btn-small btn-sec" id="user">user</button>
+
+            <button class="btn btn-50 btn-small" id="deletebtn">log off</button>
+            <div class="pagewrap">
+                <div class="msg-brd-wrap">
+                    <button class="btn btn-margin-top" data-link="gamepage" id="newgamebtn">New Game</button>
+                    <button class="btn btn-margin-top">Open Games</button>
+                    <button class="btn btn-margin-top">New Game</button>
+                    <div id="msg-brd"></div>
+                    <form>
+                        <input type="text" class="form-control" id="message">
+                        <button type="submit" id="sendbtn" class="btn btn-warning btn-lg">Send</button>
+                    </form>
+                </div>
             </div>
 
         </div>
-        <div id="signed-in" style="display:none">
-            <div class="card">
-                <h4>Login</h4>
+
+        <div id="gamepage" class="show-hide-div hide-div">
+            <button class="btn btn-50 btn-small btn-sec"></button>
+
+            <button class="btn btn-50 btn-small" data-link="homepage" id="backtohomebtn">home</button>
+
+            <div class="pagewrap">
+                <schaak-bord></schaak-bord>
+
             </div>
-
-            <div class="card">
-                <h4>Sign In</h4>
-            </div>
-
-            <div class="card">
-                <h4>Username</h4>
-            </div>
-            <div class="card">
-                <h4>Sign Out</h4>
-            </div>
-
-            <div>TEST CONNECTION</div>
-            <button id="testbtn">test</button>
-            <button id="deletebtn">delete</button>
-            <div>MESSAGEING</div>
-            <input type="text" class="form-control" id="message">
-            <button id="sendbtn" class="btn btn-warning btn-lg">Send</button>
-
-
-
-            <h1>board</h1>
-            <button onclick="startNewGame()">New Game</button>
-            <!-- <schaak-bord></schaak-bord> -->
 
         </div>
     </div>
-    <div>Icons made by
+    <!-- <div>Icons made by
         <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from
         <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by
         <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>
-    </div>
+    </div> -->
+
+
 </body>
 
 </html>
