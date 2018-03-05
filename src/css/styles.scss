@@ -78,8 +78,10 @@ input:focus {
 // }
 .wrapper {
     //   margin: 100px;
-    height: 100vw; //  max-height: 600px;
-    width: 100vw; // max-width: 600px;
+    height: 100vw;
+    max-height: 600px;
+    width: 100vw;
+    max-width: 600px;
     border-top: 2px solid $lightColor;
     border-bottom: 2px solid $lightColor;
 }
@@ -114,6 +116,10 @@ schaak-bord {
     align-items: center;
 }
 
+.selectedCell {
+    box-shadow: inset $lightColor 0px 0px 10px 5px
+}
+
 .small-padding-top {
     padding-top: $small
 }
@@ -134,15 +140,20 @@ schaak-bord {
 .msg {
     font-family: $ubunu;
     max-width: 200px;
-    margin: 2px;
+    margin: 4px;
     padding: 4px;
     clear: both;
     border-radius: 7px;
 }
 
+.msg-msg {
+    margin: 0px 0px 4px 0px;
+    padding: 4px 0px;
+}
+
 .msg-user {
     font-size: 10px;
-    font-family: $ubunu;
+    font-family: $lora;
 }
 
 .other-msg {

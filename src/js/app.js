@@ -23,10 +23,18 @@ function updateScroll() {
         server = 'http://localhost:8080';
     }
 
+
+    globalData.board = document.querySelector('schaak-bord');
+
     const socket = io(server);
     // socket.emit('test', 'hello');
 
     if (socket !== undefined) {
+
+        socket.on('return-private', (data) => {
+            console.log(data);
+
+        });
 
         socket.on('return', (data) => {
             console.log(data);
@@ -37,13 +45,49 @@ function updateScroll() {
             msgwrap.classList.add('msg');
             data.user === globalData.user ? msgwrap.classList.add('my-msg') : msgwrap.classList.add('other-msg');
 
-            msgwrap.innerHTML = `<div class="msg-user">${data.user}</div> ${data.msg}`;
+            msgwrap.innerHTML = `<div class="msg-user">${data.user}</div>
+            <div class="msg-msg">${data.msg}</div>
+            <div class="msg-user">${data.timeStamp}</div>`;
             msgBrd.appendChild(msgwrap);
             updateScroll();
 
         });
     }
 
+    function createNewGame() {
+
+        let url = server + '/newGame';
+        let cookie = localStorage.getItem('cookie');
+
+        fetch(url, {
+
+            method: 'POST',
+            // credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                cookie: cookie
+            }),
+        }).then(newGameId => {
+            newGameId.json().then(x => {
+                console.log(x);
+                globalData.game = x.game;
+                history.pushState(null, null, '#/game/' + x.game._id);
+                goToPage('gamepage');
+                //socket.on('subscribe', function (room) {
+                console.log('joined 123 private room');
+                socket.emit('subscribe', {
+                    room: x.game._id
+                });
+                // });
+            });
+        }).catch(err => {
+            console.log(err);
+            // toastie(err);
+        });
+
+    }
 
     function send(e) {
         e.preventDefault();
@@ -56,6 +100,16 @@ function updateScroll() {
             msg.value = '';
         }
     }
+
+    function test() {
+        console.log(getGameNumber());
+
+        socket.emit('private', {
+            'room': getGameNumber(),
+            'data': 'heellllloookessss'
+        });
+    }
+
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js');
     }
@@ -64,8 +118,9 @@ function updateScroll() {
     document.getElementById('signupbtn').addEventListener('click', signup);
     document.getElementById('deletebtn').addEventListener('click', delete_cookie);
     document.getElementById('loginbtn').addEventListener('click', login);
-    document.getElementById('newgamebtn').addEventListener('click', goToPage);
-    document.getElementById('backtohomebtn').addEventListener('click', goToPage);
+    document.getElementById('newgamebtn').addEventListener('click', createNewGame);
+    document.getElementById('backtohomebtn').addEventListener('click', backToHomeFromGame);
+    document.getElementById('test').addEventListener('click', test);
 
 
     let iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -94,12 +149,59 @@ function updateScroll() {
     }
 })();
 
+
+
+function backToHomeFromGame() {
+    history.pushState(null, null, '#/');
+
+    goToPage('homepage');
+}
+
+// function createNewGame() {
+
+//     let url = server + '/newGame';
+//     let cookie = localStorage.getItem('cookie');
+
+//     fetch(url, {
+
+//         method: 'POST',
+//         // credentials: 'include',
+//         headers: {
+//             'Content-Type': 'application/json'
+//         },
+//         body: JSON.stringify({
+//             cookie: cookie
+//         }),
+//     }).then(newGameId => {
+//         newGameId.json().then(x => {
+//             console.log(x);
+//             globalData.game = x.game;
+//             history.pushState(null, null, '#/game/' + x.game._id);
+//             goToPage('gamepage');
+//             //  io.on('connection', function (socket) {
+//             io.socket.join('123');
+//             // });
+
+//         });
+//     }).catch(err => {
+//         console.log(err);
+//         // toastie(err);
+//     });
+
+
+// }
+
 function goToPage(newPageId) {
+    if (globalData.busy) {
+        return;
+    }
+    globalData.busy = true;
     if (typeof newPageId !== 'string') {
         newPageId = this.dataset.link;
     }
     const oldPage = document.querySelector('.show-hide-div:not(.hide-div)');
     const newPage = document.getElementById(newPageId);
+
 
     newPage.style.left = '-100%';
     newPage.classList.remove('hide-div');
@@ -114,14 +216,15 @@ function goToPage(newPageId) {
         const oldPage = document.querySelector('.show-leave-div');
         oldPage.classList.remove('show-leave-div');
         oldPage.style.left = '-100px';
+        globalData.busy = false;
     }, 1000);
 }
 
 function delete_cookie() {
-    if (globalData.busy) {
-        return;
-    }
-    globalData.busy = true;
+    // if (globalData.busy) {
+    //     return;
+    // }
+    // globalData.busy = true;
     const url = server + '/deleteCookie';
 
     fetch(url, {
@@ -129,17 +232,17 @@ function delete_cookie() {
     }).then(x => {
         localStorage.cookie = '';
         goToPage('landing');
-        setTimeout(() => globalData.busy = false, 1000);
+        // setTimeout(() => globalData.busy = false, 1000);
 
     });
 }
 
 function signup(e) {
     e.preventDefault();
-    if (globalData.busy) {
-        return;
-    }
-    globalData.busy = true;
+    // if (globalData.busy) {
+    //     return;
+    // }
+    // globalData.busy = true;
 
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -166,10 +269,10 @@ function login(e) {
     console.log('login');
     e.preventDefault();
 
-    if (globalData.busy) {
-        return;
-    }
-    globalData.busy = true;
+    // if (globalData.busy) {
+    //     return;
+    // }
+    // globalData.busy = true;
 
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -196,6 +299,15 @@ function login(e) {
         }
     });
 
+}
+
+function getGameNumber() {
+    const url = document.URL;
+    if (url.includes('/game/')) {
+        return url.split('/game/')[1];
+    } else {
+        return 0;
+    }
 }
 
 function toastie(err) {
@@ -227,10 +339,11 @@ function logonSucces(data) {
         let user = x.user || document.getElementById('email').value || '';
         globalData.user = user;
         document.getElementById('user').innerHTML = user;
-        setTimeout(() => globalData.busy = false, 1000);
 
-        // globalData.busy = false;
-        goToPage('homepage');
+        let redirect;
+        getGameNumber() === 0 ? redirect = 'homepage' : redirect = 'gamepage';
+        // get gameData?
+        goToPage(redirect);
     });
 }
 
@@ -239,6 +352,7 @@ export class Schaakbord extends HTMLElement {
 
     constructor() {
         super();
+        // get gameData?
         console.log('CONSTR');
         this.reken = new Reken();
         this.t = 'xxx';
@@ -262,6 +376,10 @@ export class Schaakbord extends HTMLElement {
 
     }
 
+    test() {
+        console.log('testtest');
+
+    }
 
     startNewGame() {
         this.board[0] = this.pieces.blackRook;
@@ -318,7 +436,9 @@ export class Schaakbord extends HTMLElement {
 
         if (!this.selectedPiece) {
             this.selectedPiece = c;
+            this.selectedPiece.classList.add('selectedCell');
         } else {
+            document.querySelector('.selectedCell').classList.remove('selectedCell');
             c.innerHTML = this.selectedPiece.innerHTML;
             this.selectedPiece.innerHTML = '';
             this.selectedPiece = null;
