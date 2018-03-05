@@ -17,7 +17,7 @@ function updateScroll() {
     element.scrollTop = element.scrollHeight;
 }
 
-(function () {
+const iife = (function () {
     console.log('start! screen (w x h): ' + screen.width + 'x' + screen.height);
     if (document.URL.includes('localhost')) {
         server = 'http://localhost:8080';
@@ -32,13 +32,14 @@ function updateScroll() {
     if (socket !== undefined) {
 
         socket.on('return-private', (data) => {
+            console.log('return private');
             console.log(data);
 
+            globalData.board.moveByNotation(data);
         });
 
         socket.on('return', (data) => {
             console.log(data);
-
             const msgBrd = document.getElementById('msg-brd');
 
             let msgwrap = document.createElement('span');
@@ -77,16 +78,20 @@ function updateScroll() {
                 goToPage('gamepage');
                 //socket.on('subscribe', function (room) {
                 console.log('joined 123 private room');
-                socket.emit('subscribe', {
-                    room: x.game._id
-                });
-                // });
+                joinRoom(x.game._id);
             });
         }).catch(err => {
             console.log(err);
             // toastie(err);
         });
 
+    }
+
+
+    function joinRoom(room) {
+        socket.emit('subscribe', {
+            room: room
+        });
     }
 
     function send(e) {
@@ -101,12 +106,12 @@ function updateScroll() {
         }
     }
 
-    function test() {
+    function test(data) {
         console.log(getGameNumber());
 
         socket.emit('private', {
             'room': getGameNumber(),
-            'data': 'heellllloookessss'
+            'data': data
         });
     }
 
@@ -120,7 +125,7 @@ function updateScroll() {
     document.getElementById('loginbtn').addEventListener('click', login);
     document.getElementById('newgamebtn').addEventListener('click', createNewGame);
     document.getElementById('backtohomebtn').addEventListener('click', backToHomeFromGame);
-    document.getElementById('test').addEventListener('click', test);
+    // document.getElementById('test').addEventListener('click', test);
 
 
     let iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -147,6 +152,11 @@ function updateScroll() {
             logonSucces(x);
         });
     }
+
+    return {
+        test: test,
+        joinRoom: joinRoom
+    };
 })();
 
 
@@ -341,7 +351,14 @@ function logonSucces(data) {
         document.getElementById('user').innerHTML = user;
 
         let redirect;
-        getGameNumber() === 0 ? redirect = 'homepage' : redirect = 'gamepage';
+        let gNumber = getGameNumber();
+        if (gNumber === 0) {
+
+            redirect = 'homepage';
+        } else {
+            iife.joinRoom(gNumber);
+            redirect = 'gamepage';
+        }
         // get gameData?
         goToPage(redirect);
     });
@@ -376,10 +393,10 @@ export class Schaakbord extends HTMLElement {
 
     }
 
-    test() {
-        console.log('testtest');
+    // test() {
+    //     console.log('testtest');
 
-    }
+    // }
 
     startNewGame() {
         this.board[0] = this.pieces.blackRook;
@@ -425,9 +442,8 @@ export class Schaakbord extends HTMLElement {
     }
 
     clickCell(c, i) {
-
+        //TODO string opbouwen: E4:E6
         console.log(this.reken.getBoardNumber(i));
-
 
         let piece = Object.keys(this.pieces).find(x => {
             return this.pieces[x].substr(2, 4).toString() === c.innerHTML.charCodeAt(0).toString();
@@ -437,13 +453,38 @@ export class Schaakbord extends HTMLElement {
         if (!this.selectedPiece) {
             this.selectedPiece = c;
             this.selectedPiece.classList.add('selectedCell');
+
+            this.stringNotation = i;
         } else {
             document.querySelector('.selectedCell').classList.remove('selectedCell');
-            c.innerHTML = this.selectedPiece.innerHTML;
-            this.selectedPiece.innerHTML = '';
+            // c.innerHTML = this.selectedPiece.innerHTML;
+            // this.selectedPiece.innerHTML = '';
             this.selectedPiece = null;
+            this.stringNotation += ':' + i;
+            iife.test(this.stringNotation);
+            this.stringNotation = '';
+
         }
     }
+
+    moveByNotation(not) {
+        let from = not.move.split(':')[0];
+        let to = not.move.split(':')[1];
+
+        let alles = document.querySelectorAll('.cell');
+
+        alles[to].innerHTML = alles[from].innerHTML;
+        alles[from].innerHTML = '';
+        alles[from].classList.add('selectedCell');
+        alles[to].classList.add('selectedCell');
+
+        setTimeout(() => {
+            alles[from].classList.remove('selectedCell');
+            alles[to].classList.remove('selectedCell');
+        }, 2500);
+
+    }
+
     drawPieces(arr) {
         document.querySelectorAll('.cell').forEach((cell, i) => cell.innerHTML = arr[i]);
     }
