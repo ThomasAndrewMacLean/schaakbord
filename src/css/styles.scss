@@ -167,3 +167,8 @@ schaak-bord {
     color: $darkColor;
     float: right;
 }
+
+#openGameList {
+    height: calc(100vh - 45px);
+    overflow: auto;
+}

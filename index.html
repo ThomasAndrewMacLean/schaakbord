@@ -183,8 +183,8 @@
             <div class="pagewrap">
                 <div class="msg-brd-wrap">
                     <button class="btn btn-margin-top" data-link="gamepage" id="newgamebtn">New Game</button>
-                    <button class="btn btn-margin-top">Open Games</button>
-                    <button class="btn btn-margin-top">New Game</button>
+                    <button class="btn btn-margin-top" data-link="openpage" id="openbtn">Open Games</button>
+
                     <div id="msg-brd"></div>
                     <form>
                         <input type="text" class="form-control" id="message">
@@ -192,9 +192,20 @@
                     </form>
                 </div>
             </div>
+        </div>
+        <div id="openpage" class="show-hide-div hide-div">
+            <button class="btn btn-50 btn-small btn-sec"></button>
+
+            <button class="btn btn-50 btn-small" data-link="homepage" id="backtohomebtn2">home</button>
+
+            <div class="pagewrap">
+                <div id="openGameList"></div>
+
+                <!-- <button id="test">test</button> -->
+                <!-- <a href="whatsapp://send?text=spel spelen?: https://schaakbordapp.firebaseapp.com/">whatsApp</a> -->
+            </div>
 
         </div>
-
         <div id="gamepage" class="show-hide-div hide-div">
             <button class="btn btn-50 btn-small btn-sec"></button>
 

@@ -42,17 +42,21 @@ const iife = (function () {
             console.log(data);
             const msgBrd = document.getElementById('msg-brd');
 
-            let msgwrap = document.createElement('span');
-            msgwrap.classList.add('msg');
-            data.user === globalData.user ? msgwrap.classList.add('my-msg') : msgwrap.classList.add('other-msg');
-
-            msgwrap.innerHTML = `<div class="msg-user">${data.user}</div>
-            <div class="msg-msg">${data.msg}</div>
-            <div class="msg-user">${data.timeStamp}</div>`;
-            msgBrd.appendChild(msgwrap);
+            addMsgToBoard(msgBrd, data);
             updateScroll();
 
         });
+    }
+
+    function addMsgToBoard(msgBoard, data) {
+        let msgwrap = document.createElement('span');
+        msgwrap.classList.add('msg');
+        data.user === globalData.user ? msgwrap.classList.add('my-msg') : msgwrap.classList.add('other-msg');
+
+        msgwrap.innerHTML = `<div class="msg-user">${data.user}</div>
+        <div class="msg-msg">${data.message}</div>
+        <div class="msg-user">${data.createdAt}</div>`;
+        msgBoard.appendChild(msgwrap);
     }
 
     function createNewGame() {
@@ -115,6 +119,20 @@ const iife = (function () {
         });
     }
 
+    function postWithCookie(url, options) {
+        return fetch(server + '/' + url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+
+                cookie: localStorage.getItem('cookie'),
+                ...options,
+            }),
+        });
+    }
+
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js');
     }
@@ -125,6 +143,10 @@ const iife = (function () {
     document.getElementById('loginbtn').addEventListener('click', login);
     document.getElementById('newgamebtn').addEventListener('click', createNewGame);
     document.getElementById('backtohomebtn').addEventListener('click', backToHomeFromGame);
+    document.getElementById('backtohomebtn2').addEventListener('click', goToPage);
+
+    document.getElementById('openbtn').addEventListener('click', goToOpenGames);
+
     // document.getElementById('test').addEventListener('click', test);
 
 
@@ -155,51 +177,55 @@ const iife = (function () {
 
     return {
         test: test,
-        joinRoom: joinRoom
+        joinRoom: joinRoom,
+        postWithCookie: postWithCookie,
+        addMsgToBoard
     };
 })();
 
 
+
+function goToGame() {
+    let id = this.dataset.id;
+    console.log('id: ' + id);
+}
+
+function goToOpenGames() {
+
+    fetch(server + '/getOpenGames', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            cookie: localStorage.getItem('cookie'),
+        }),
+    }).then(x => {
+        x.json().then(j => {
+            console.log(j);
+            let listdiv = document.getElementById('openGameList');
+            let innerHTML = '';
+            j.forEach(g => {
+                innerHTML += `<button data-id="${g._id}" class="btn btn-small btn-click-open">${g.playerWhite} - ${g.playerBlack}</button>`;
+            });
+            listdiv.innerHTML = innerHTML;
+            document.querySelectorAll('.btn-click-open').forEach(dd => {
+                dd.addEventListener('click', goToGame);
+
+            });
+            goToPage('openpage');
+        });
+
+    });
+
+
+}
 
 function backToHomeFromGame() {
     history.pushState(null, null, '#/');
 
     goToPage('homepage');
 }
-
-// function createNewGame() {
-
-//     let url = server + '/newGame';
-//     let cookie = localStorage.getItem('cookie');
-
-//     fetch(url, {
-
-//         method: 'POST',
-//         // credentials: 'include',
-//         headers: {
-//             'Content-Type': 'application/json'
-//         },
-//         body: JSON.stringify({
-//             cookie: cookie
-//         }),
-//     }).then(newGameId => {
-//         newGameId.json().then(x => {
-//             console.log(x);
-//             globalData.game = x.game;
-//             history.pushState(null, null, '#/game/' + x.game._id);
-//             goToPage('gamepage');
-//             //  io.on('connection', function (socket) {
-//             io.socket.join('123');
-//             // });
-
-//         });
-//     }).catch(err => {
-//         console.log(err);
-//         // toastie(err);
-//     });
-
-
-// }
 
 function goToPage(newPageId) {
     if (globalData.busy) {
@@ -248,52 +274,27 @@ function delete_cookie() {
 }
 
 function signup(e) {
-    e.preventDefault();
-    // if (globalData.busy) {
-    //     return;
-    // }
-    // globalData.busy = true;
-
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const url = server + '/signup';
-
-    fetch(url, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: `email=${email}&password=${password}`
-    }).then(d => {
-        if (d.status === 200) {
-            logonSucces(d);
-        } else {
-            toastie(d);
-        }
-    });
-
+    loginSignUp(e, '/signup');
 }
 
 function login(e) {
-    console.log('login');
-    e.preventDefault();
+    loginSignUp(e, '/login');
+}
 
-    // if (globalData.busy) {
-    //     return;
-    // }
-    // globalData.busy = true;
+function loginSignUp(e, urlRoute) {
+    e.preventDefault();
 
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    //   const url = 'https://obscure-thicket-57329.herokuapp.com/login'; //TODO: in env steken
-    const url = server + '/login'; //TODO: in env steken
 
-    //  console.log(email + '-' + password);
+    if (!email || !password) {
+        return;
+    }
+
+    const url = server + urlRoute;
 
     fetch(url, {
         method: 'POST',
-        // mode: 'no-cors',
         credentials: 'include',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -301,14 +302,11 @@ function login(e) {
         body: `email=${email}&password=${password}`
     }).then(d => {
         if (d.status === 200) {
-
             logonSucces(d);
         } else {
-
             toastie(d);
         }
     });
-
 }
 
 function getGameNumber() {
@@ -357,10 +355,42 @@ function logonSucces(data) {
             redirect = 'homepage';
         } else {
             iife.joinRoom(gNumber);
+            let url = server + '/addPlayer';
+            let cookie = localStorage.getItem('cookie');
+            fetch(url, {
+
+                method: 'POST',
+                // credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    cookie: cookie,
+                    gameId: gNumber
+                }),
+            });
+
             redirect = 'gamepage';
         }
+        iife.postWithCookie('getMessages', {
+            'hellotest': 'jowkese'
+        }).then(msg => {
+            msg.json().then(m => {
+                console.log(m);
+                const msgBrd = document.getElementById('msg-brd');
+                msgBrd.innerHTML = '';
+                m.reverse().forEach(mm => iife.addMsgToBoard(msgBrd, mm));
+
+                updateScroll();
+
+            });
+        });
+
         // get gameData?
         goToPage(redirect);
+
+
+
     });
 }
 
