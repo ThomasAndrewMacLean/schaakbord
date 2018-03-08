@@ -128,7 +128,7 @@ const iife = (function () {
             body: JSON.stringify({
 
                 cookie: localStorage.getItem('cookie'),
-                ...options,
+                options,
             }),
         });
     }
