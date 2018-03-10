@@ -6,6 +6,7 @@ import {
 
 import io from 'socket.io-client';
 
+
 let server = 'https://obscure-thicket-57329.herokuapp.com';
 
 
@@ -27,15 +28,18 @@ const iife = (function () {
     globalData.board = document.querySelector('schaak-bord');
 
     const socket = io(server);
-    // socket.emit('test', 'hello');
 
     if (socket !== undefined) {
 
         socket.on('return-private', (data) => {
-            console.log('return private');
-            console.log(data);
+            // console.log('return private');
+            // console.log(data);
 
-            globalData.board.moveByNotation(data);
+            if (data.gameId === getGameNumber()) {
+                globalData.board.moveByNotation(data);
+            } else {
+                toastieFromString('new move in game: ' + data.opponent, 'info');
+            }
         });
 
         socket.on('return', (data) => {
@@ -77,16 +81,16 @@ const iife = (function () {
         }).then(newGameId => {
             newGameId.json().then(x => {
                 console.log(x);
-                globalData.game = x.game;
+                setUpBoard(x.game);
+                // globalData.board.drawPieces(x.game.moves[0]);
+                // globalData.board.playerToPlay = x.game.playerWhite;
                 history.pushState(null, null, '#/game/' + x.game._id);
+                const secondPlayer = document.getElementById('secondplayer');
+
                 goToPage('gamepage');
-                //socket.on('subscribe', function (room) {
-                console.log('joined 123 private room');
-                joinRoom(x.game._id);
             });
         }).catch(err => {
             console.log(err);
-            // toastie(err);
         });
 
     }
@@ -110,10 +114,8 @@ const iife = (function () {
         }
     }
 
-    function test(data) {
-        console.log(getGameNumber());
-
-        socket.emit('private', {
+    function sendMove(data) {
+        socket.emit('sendMove', {
             'room': getGameNumber(),
             'data': data
         });
@@ -133,7 +135,7 @@ const iife = (function () {
         });
     }
 
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && !document.URL.includes('localhost')) {
         navigator.serviceWorker.register('service-worker.js');
     }
 
@@ -144,11 +146,9 @@ const iife = (function () {
     document.getElementById('newgamebtn').addEventListener('click', createNewGame);
     document.getElementById('backtohomebtn').addEventListener('click', backToHomeFromGame);
     document.getElementById('backtohomebtn2').addEventListener('click', goToPage);
+    document.getElementById('whatsappshare').addEventListener('click', whatsappshare);
 
     document.getElementById('openbtn').addEventListener('click', goToOpenGames);
-
-    // document.getElementById('test').addEventListener('click', test);
-
 
     let iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const url = server + '/testLogin';
@@ -176,18 +176,51 @@ const iife = (function () {
     }
 
     return {
-        test: test,
+        sendMove: sendMove,
         joinRoom: joinRoom,
         postWithCookie: postWithCookie,
         addMsgToBoard
     };
 })();
 
+function whatsappshare() {
 
+
+    // <a href="whatsapp://send?text=spel spelen?: https://schaakbordapp.firebaseapp.com/">whatsApp</a>
+
+    let aLink = document.createElement('a');
+    aLink.href = 'whatsapp://send?text=spel spelen?: https://schaakbordapp.firebaseapp.com/%23/game/' + getGameNumber();
+    aLink.click();
+
+}
 
 function goToGame() {
     let id = this.dataset.id;
-    console.log('id: ' + id);
+
+    let url = server + '/addPlayer';
+    let cookie = localStorage.getItem('cookie');
+    fetch(url, {
+
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            cookie: cookie,
+            gameId: id
+        }),
+    }).then(g => {
+        g.json().then(game => {
+            console.log('game');
+            console.log(game);
+            // globalData.board.drawPieces(game.moves.slice(-1).pop())
+
+            setUpBoard(game);
+
+            history.pushState(null, null, '#/game/' + id);
+            goToPage('gamepage');
+        });
+    });
 }
 
 function goToOpenGames() {
@@ -318,6 +351,20 @@ function getGameNumber() {
     }
 }
 
+function toastieFromString(text, typeClass) {
+    const toaster = document.getElementById('toaster');
+    toaster.innerHTML = text;
+    toaster.classList.add(typeClass);
+
+    toaster.classList.add('showtoast');
+    setTimeout(() => {
+        const toaster = document.getElementById('toaster');
+        toaster.classList.remove('showtoast');
+        toaster.classList.remove(typeClass);
+        toaster.innerHTML = '';
+    }, 5000);
+}
+
 function toastie(err) {
     console.log('error');
     console.log(err);
@@ -327,18 +374,26 @@ function toastie(err) {
         console.log(x);
         const errMsg = x.err || 'Something went wrong...';
 
-        const toaster = document.getElementById('toaster');
-        toaster.innerHTML = errMsg;
-        toaster.classList.add('showtoast');
-        setTimeout(() => {
-            const toaster = document.getElementById('toaster');
-            toaster.classList.remove('showtoast');
-        }, 5000);
+        toastieFromString(errMsg, 'error');
     });
 }
 
+function setUpBoard(game) {
+    let players = [game.playerBlack, game.playerWhite];
+
+
+    globalData.board.playerBlack = game.playerBlack;
+    globalData.board.playerWhite = game.playerWhite;
+    globalData.board.playerToPlay = players[game.moves.length % 2];
+    globalData.board.drawPieces(game.moves.slice(-1).pop());
+}
+
 function logonSucces(data) {
+    console.log(data);
+
     data.json().then(x => {
+        console.log('succes');
+
         console.log(x);
 
         if (x.cookie) {
@@ -346,6 +401,8 @@ function logonSucces(data) {
         }
         let user = x.user || document.getElementById('email').value || '';
         globalData.user = user;
+        iife.joinRoom(user);
+
         document.getElementById('user').innerHTML = user;
 
         let redirect;
@@ -354,7 +411,7 @@ function logonSucces(data) {
 
             redirect = 'homepage';
         } else {
-            iife.joinRoom(gNumber);
+            //  iife.joinRoom(gNumber);
             let url = server + '/addPlayer';
             let cookie = localStorage.getItem('cookie');
             fetch(url, {
@@ -368,6 +425,14 @@ function logonSucces(data) {
                     cookie: cookie,
                     gameId: gNumber
                 }),
+            }).then(g => {
+                g.json().then(game => {
+                    console.log('game');
+                    console.log(game);
+
+                    setUpBoard(game);
+
+                });
             });
 
             redirect = 'gamepage';
@@ -376,7 +441,7 @@ function logonSucces(data) {
             'hellotest': 'jowkese'
         }).then(msg => {
             msg.json().then(m => {
-                console.log(m);
+
                 const msgBrd = document.getElementById('msg-brd');
                 msgBrd.innerHTML = '';
                 m.reverse().forEach(mm => iife.addMsgToBoard(msgBrd, mm));
@@ -402,7 +467,9 @@ export class Schaakbord extends HTMLElement {
         // get gameData?
         console.log('CONSTR');
         this.reken = new Reken();
-        this.t = 'xxx';
+        this.board = new Array(64).fill('');
+        this.drawEmptyBoard();
+
         this.pieces = {
             whiteKing: '&#9812;',
             whiteQueen: '&#9813;',
@@ -417,62 +484,11 @@ export class Schaakbord extends HTMLElement {
             blackKnight: '&#9822;',
             blackPawn: '&#9823;'
         };
-
-        this.board = new Array(64).fill('');
-        this.startNewGame();
-
-    }
-
-    // test() {
-    //     console.log('testtest');
-
-    // }
-
-    startNewGame() {
-        this.board[0] = this.pieces.blackRook;
-        this.board[1] = this.pieces.blackKnight;
-        this.board[2] = this.pieces.blackBishop;
-        this.board[3] = this.pieces.blackQueen;
-        this.board[4] = this.pieces.blackKing;
-        this.board[5] = this.pieces.blackBishop;
-        this.board[6] = this.pieces.blackKnight;
-        this.board[7] = this.pieces.blackRook;
-
-        this.board[8] = this.pieces.blackPawn;
-        this.board[9] = this.pieces.blackPawn;
-        this.board[10] = this.pieces.blackPawn;
-        this.board[11] = this.pieces.blackPawn;
-        this.board[12] = this.pieces.blackPawn;
-        this.board[13] = this.pieces.blackPawn;
-        this.board[14] = this.pieces.blackPawn;
-        this.board[15] = this.pieces.blackPawn;
-
-        this.board[48] = this.pieces.whitePawn;
-        this.board[49] = this.pieces.whitePawn;
-        this.board[50] = this.pieces.whitePawn;
-        this.board[51] = this.pieces.whitePawn;
-        this.board[52] = this.pieces.whitePawn;
-        this.board[53] = this.pieces.whitePawn;
-        this.board[54] = this.pieces.whitePawn;
-        this.board[55] = this.pieces.whitePawn;
-
-        this.board[56] = this.pieces.whiteRook;
-        this.board[57] = this.pieces.whiteKnight;
-        this.board[58] = this.pieces.whiteBishop;
-        this.board[59] = this.pieces.whiteQueen;
-        this.board[60] = this.pieces.whiteKing;
-        this.board[61] = this.pieces.whiteBishop;
-        this.board[62] = this.pieces.whiteKnight;
-        this.board[63] = this.pieces.whiteRook;
-
-        //    const sb = document.querySelector('schaak-bord');
-        this.innerHTML = '';
-        this.drawEmptyBoard();
-        this.drawPieces(this.board);
     }
 
     clickCell(c, i) {
-        //TODO string opbouwen: E4:E6
+
+
         console.log(this.reken.getBoardNumber(i));
 
         let piece = Object.keys(this.pieces).find(x => {
@@ -480,39 +496,54 @@ export class Schaakbord extends HTMLElement {
         });
         console.log(piece);
 
+        if (globalData.user !== this.playerToPlay) {
+            console.log(`not your turn ${globalData.user}, ${this.playerToPlay} has to play first...`);
+            return;
+        }
+
+        let colorToPlay = this.playerToPlay === this.playerWhite ? 'white' : 'black';
+        console.log(colorToPlay);
+
         if (!this.selectedPiece) {
+
+            if (piece == undefined || !piece.includes(colorToPlay)) {
+                console.log('empty cell');
+                return;
+            }
+
             this.selectedPiece = c;
             this.selectedPiece.classList.add('selectedCell');
 
             this.stringNotation = i;
         } else {
-            document.querySelector('.selectedCell').classList.remove('selectedCell');
-            // c.innerHTML = this.selectedPiece.innerHTML;
-            // this.selectedPiece.innerHTML = '';
-            this.selectedPiece = null;
-            this.stringNotation += ':' + i;
-            iife.test(this.stringNotation);
-            this.stringNotation = '';
 
+            if (this.stringNotation == i) {
+                console.log('same place');
+                document.querySelector('.selectedCell').classList.remove('selectedCell');
+                this.selectedPiece = null;
+                this.stringNotation = '';
+                return;
+            }
+            if (piece.includes(colorToPlay)) {
+                console.log('same color');
+                return;
+            }
+
+            document.querySelector('.selectedCell').classList.remove('selectedCell');
+
+            this.stringNotation += ':' + i;
+            iife.sendMove(this.stringNotation);
+
+            this.selectedPiece = null;
+            this.stringNotation = '';
         }
     }
 
     moveByNotation(not) {
-        let from = not.move.split(':')[0];
-        let to = not.move.split(':')[1];
+        console.log(not);
 
-        let alles = document.querySelectorAll('.cell');
-
-        alles[to].innerHTML = alles[from].innerHTML;
-        alles[from].innerHTML = '';
-        alles[from].classList.add('selectedCell');
-        alles[to].classList.add('selectedCell');
-
-        setTimeout(() => {
-            alles[from].classList.remove('selectedCell');
-            alles[to].classList.remove('selectedCell');
-        }, 2500);
-
+        this.playerToPlay = not.nextPlayer;
+        this.drawPieces(not.board);
     }
 
     drawPieces(arr) {
@@ -520,7 +551,6 @@ export class Schaakbord extends HTMLElement {
     }
 
     drawEmptyBoard() {
-
         let wrapper = document.createElement('div');
         wrapper.classList.add('wrapper');
         this.appendChild(wrapper);
@@ -529,7 +559,6 @@ export class Schaakbord extends HTMLElement {
             let d = document.createElement('div');
             d.classList.add('cell');
             d.addEventListener('click', (e) => this.clickCell(e.target, i));
-            // cell ? d.innerHTML = cell : d.innerHTML = '';
             wrapper.appendChild(d);
         });
         let selectedPiece = null;

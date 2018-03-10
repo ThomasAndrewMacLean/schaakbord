@@ -10,7 +10,6 @@ $lightColor:rgb(171, 238, 237);
 ;
 #toaster {
     font-family: $ubunu;
-    background: rgb(255, 0, 0);
     color: whitesmoke;
     position: absolute;
     width: 100%;
@@ -20,6 +19,14 @@ $lightColor:rgb(171, 238, 237);
     line-height: 30px;
     top: -50px;
     transition: top 0.3s ease-in-out;
+}
+
+#toaster.error {
+    background: rgb(255, 0, 0);
+}
+
+#toaster.info {
+    background: rgb(0, 0, 255);
 }
 
 .showtoast {
@@ -169,6 +176,10 @@ schaak-bord {
 }
 
 #openGameList {
+    width: 100vw;
     height: calc(100vh - 45px);
     overflow: auto;
+    .btn {
+        margin-top: 10px;
+    }
 }
