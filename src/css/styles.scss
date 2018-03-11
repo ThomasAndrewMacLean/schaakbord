@@ -127,6 +127,10 @@ schaak-bord {
     box-shadow: inset $lightColor 0px 0px 10px 5px
 }
 
+.possibleMove {
+    box-shadow: inset greenyellow 0px 0px 10px 5px
+}
+
 .small-padding-top {
     padding-top: $small
 }

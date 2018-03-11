@@ -36,6 +36,7 @@ const iife = (function () {
             // console.log(data);
 
             if (data.gameId === getGameNumber()) {
+
                 globalData.board.moveByNotation(data);
             } else {
                 toastieFromString('new move in game: ' + data.opponent, 'info');
@@ -82,8 +83,9 @@ const iife = (function () {
             newGameId.json().then(x => {
                 console.log(x);
                 setUpBoard(x.game);
-                // globalData.board.drawPieces(x.game.moves[0]);
-                // globalData.board.playerToPlay = x.game.playerWhite;
+
+
+
                 history.pushState(null, null, '#/game/' + x.game._id);
                 const secondPlayer = document.getElementById('secondplayer');
 
@@ -213,7 +215,6 @@ function goToGame() {
         g.json().then(game => {
             console.log('game');
             console.log(game);
-            // globalData.board.drawPieces(game.moves.slice(-1).pop())
 
             setUpBoard(game);
 
@@ -385,7 +386,8 @@ function setUpBoard(game) {
     globalData.board.playerBlack = game.playerBlack;
     globalData.board.playerWhite = game.playerWhite;
     globalData.board.playerToPlay = players[game.moves.length % 2];
-    globalData.board.drawPieces(game.moves.slice(-1).pop());
+    globalData.board.board = game.moves.slice(-1).pop();
+    globalData.board.reken.drawPieces(game.moves.slice(-1).pop());
 }
 
 function logonSucces(data) {
@@ -470,31 +472,25 @@ export class Schaakbord extends HTMLElement {
         this.board = new Array(64).fill('');
         this.drawEmptyBoard();
 
-        this.pieces = {
-            whiteKing: '&#9812;',
-            whiteQueen: '&#9813;',
-            whiteRook: '&#9814;',
-            whiteBishop: '&#9815;',
-            whiteKnight: '&#9816;',
-            whitePawn: '&#9817;',
-            blackKing: '&#9818;',
-            blackQueen: '&#9819;',
-            blackRook: '&#9820;',
-            blackBishop: '&#9821;',
-            blackKnight: '&#9822;',
-            blackPawn: '&#9823;'
-        };
+        this.pieces = this.reken.getPieces();
+
+
     }
+
+
 
     clickCell(c, i) {
 
 
-        console.log(this.reken.getBoardNumber(i));
+        // console.log(this.reken.getBoardNumber(i));
 
         let piece = Object.keys(this.pieces).find(x => {
             return this.pieces[x].substr(2, 4).toString() === c.innerHTML.charCodeAt(0).toString();
         });
-        console.log(piece);
+
+        let pieceColor = piece && piece.substr(0, 5) || '';
+
+
 
         if (globalData.user !== this.playerToPlay) {
             console.log(`not your turn ${globalData.user}, ${this.playerToPlay} has to play first...`);
@@ -502,7 +498,6 @@ export class Schaakbord extends HTMLElement {
         }
 
         let colorToPlay = this.playerToPlay === this.playerWhite ? 'white' : 'black';
-        console.log(colorToPlay);
 
         if (!this.selectedPiece) {
 
@@ -510,7 +505,12 @@ export class Schaakbord extends HTMLElement {
                 console.log('empty cell');
                 return;
             }
+            console.log(this.board);
 
+            let moves = this.reken.getCorrectMoves(i, this.board);
+            console.log(moves);
+
+            this.reken.setCorrectMoveClassOnBoard(moves);
             this.selectedPiece = c;
             this.selectedPiece.classList.add('selectedCell');
 
@@ -522,10 +522,17 @@ export class Schaakbord extends HTMLElement {
                 document.querySelector('.selectedCell').classList.remove('selectedCell');
                 this.selectedPiece = null;
                 this.stringNotation = '';
+                this.reken.removeCorrectMoveClassOnBoard();
                 return;
             }
-            if (piece.includes(colorToPlay)) {
+            if (piece && piece.includes(colorToPlay)) {
                 console.log('same color');
+                return;
+            }
+
+            if (!c.classList.contains('possibleMove')) {
+                console.log('not valid');
+
                 return;
             }
 
@@ -533,7 +540,7 @@ export class Schaakbord extends HTMLElement {
 
             this.stringNotation += ':' + i;
             iife.sendMove(this.stringNotation);
-
+            this.reken.removeCorrectMoveClassOnBoard();
             this.selectedPiece = null;
             this.stringNotation = '';
         }
@@ -541,14 +548,11 @@ export class Schaakbord extends HTMLElement {
 
     moveByNotation(not) {
         console.log(not);
-
+        this.board = not.board;
         this.playerToPlay = not.nextPlayer;
-        this.drawPieces(not.board);
+        this.reken.drawPieces(not.board);
     }
 
-    drawPieces(arr) {
-        document.querySelectorAll('.cell').forEach((cell, i) => cell.innerHTML = arr[i]);
-    }
 
     drawEmptyBoard() {
         let wrapper = document.createElement('div');
