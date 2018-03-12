@@ -505,11 +505,9 @@ export class Schaakbord extends HTMLElement {
                 console.log('empty cell');
                 return;
             }
-            console.log(this.board);
 
             let moves = this.reken.getCorrectMoves(i, this.board);
-            console.log(moves);
-
+            //  this.reken.removeCorrectMoveClassOnBoard();
             this.reken.setCorrectMoveClassOnBoard(moves);
             this.selectedPiece = c;
             this.selectedPiece.classList.add('selectedCell');
@@ -527,6 +525,14 @@ export class Schaakbord extends HTMLElement {
             }
             if (piece && piece.includes(colorToPlay)) {
                 console.log('same color');
+                document.querySelector('.selectedCell').classList.remove('selectedCell');
+                this.reken.removeCorrectMoveClassOnBoard();
+                let moves = this.reken.getCorrectMoves(i, this.board);
+                this.reken.setCorrectMoveClassOnBoard(moves);
+                this.selectedPiece = c;
+                this.selectedPiece.classList.add('selectedCell');
+
+                this.stringNotation = i;
                 return;
             }
 
