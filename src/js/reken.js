@@ -180,27 +180,27 @@ export class Reken {
 
             let returnArr = [];
             switch (pieceClicked.piece) {
-            case 'Pawn':
-                this.getPawnMovesWhite(returnArr, startLocation, arr, i, 'black', '2');
-                return returnArr;
-            case 'Rook':
-                this.getRookMoves(returnArr, arr, i, 'black');
-                return returnArr;
-            case 'Bishop':
-                this.getBishopMoves(returnArr, arr, i, 'black');
-                return returnArr;
-            case 'Knight':
-                this.getKnightMoves(returnArr, arr, i, 'black');
-                return returnArr;
-            case 'Queen':
-                this.getRookMoves(returnArr, arr, i, 'black');
-                this.getBishopMoves(returnArr, arr, i, 'black');
-                return returnArr;
-            case 'King':
-                this.getKingMoves(returnArr, arr, i, 'black');
-                return returnArr;
-            default:
-                return undefined;
+                case 'Pawn':
+                    this.getPawnMovesWhite(returnArr, startLocation, arr, i, 'black', '2');
+                    return returnArr;
+                case 'Rook':
+                    this.getRookMoves(returnArr, arr, i, 'black');
+                    return returnArr;
+                case 'Bishop':
+                    this.getBishopMoves(returnArr, arr, i, 'black');
+                    return returnArr;
+                case 'Knight':
+                    this.getKnightMoves(returnArr, arr, i, 'black');
+                    return returnArr;
+                case 'Queen':
+                    this.getRookMoves(returnArr, arr, i, 'black');
+                    this.getBishopMoves(returnArr, arr, i, 'black');
+                    return returnArr;
+                case 'King':
+                    this.getKingMoves(returnArr, arr, i, 'black');
+                    return returnArr;
+                default:
+                    return undefined;
             }
         }
         if (pieceClicked.color === 'black') {
@@ -208,27 +208,27 @@ export class Reken {
             let returnArr = [];
 
             switch (pieceClicked.piece) {
-            case 'Pawn':
-                this.getPawnMovesBlack(returnArr, startLocation, arr, i, 'white', '7');
-                return returnArr;
-            case 'Rook':
-                this.getRookMoves(returnArr, arr, i, 'white');
-                return returnArr;
-            case 'Knight':
-                this.getKnightMoves(returnArr, arr, i, 'white');
-                return returnArr;
-            case 'Bishop':
-                this.getBishopMoves(returnArr, arr, i, 'white');
-                return returnArr;
-            case 'Queen':
-                this.getRookMoves(returnArr, arr, i, 'white');
-                this.getBishopMoves(returnArr, arr, i, 'white');
-                return returnArr;
-            case 'King':
-                this.getKingMoves(returnArr, arr, i, 'white');
-                return returnArr;
-            default:
-                return undefined;
+                case 'Pawn':
+                    this.getPawnMovesBlack(returnArr, startLocation, arr, i, 'white', '7');
+                    return returnArr;
+                case 'Rook':
+                    this.getRookMoves(returnArr, arr, i, 'white');
+                    return returnArr;
+                case 'Knight':
+                    this.getKnightMoves(returnArr, arr, i, 'white');
+                    return returnArr;
+                case 'Bishop':
+                    this.getBishopMoves(returnArr, arr, i, 'white');
+                    return returnArr;
+                case 'Queen':
+                    this.getRookMoves(returnArr, arr, i, 'white');
+                    this.getBishopMoves(returnArr, arr, i, 'white');
+                    return returnArr;
+                case 'King':
+                    this.getKingMoves(returnArr, arr, i, 'white');
+                    return returnArr;
+                default:
+                    return undefined;
             }
         }
 

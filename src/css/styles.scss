@@ -54,6 +54,27 @@ input:focus {
     outline: none;
 }
 
+.btn {
+    overflow: hidden;
+    position: relative; //appearance: none;
+    &::before {
+        --size: 0;
+        content: '';
+        position: absolute;
+        left: var(--x);
+        top: var(--y);
+        width: var(--size);
+        height: var(--size); //
+        //    background: radial-gradient(circle closest-side, #4405f7, transparent);
+        background: radial-gradient(circle closest-side, greenyellow, transparent);
+        transform: translate(-50%, -50%);
+        transition: width .2s ease, height .2s ease;
+    }
+    &:active::before {
+        --size: 400px;
+    }
+}
+
 .btn:active {
     background: rgba(233, 7, 7, 0.15);
 }
@@ -83,14 +104,34 @@ input:focus {
 //     justify-content: center;
 //     align-items: center;
 // }
+.player-black {
+    transform: rotate(180deg);
+}
+
 .wrapper {
     //   margin: 100px;
+    --rotateblack: 0deg;
     height: 100vw;
     max-height: 600px;
     width: 100vw;
     max-width: 600px;
     border-top: 2px solid $lightColor;
     border-bottom: 2px solid $lightColor;
+    transform: rotate(var(--rotateblack));
+}
+
+.piece {
+    // display: flex;
+    // align-items: center;
+    // justify-content: center;
+    font-size: 40px;
+    line-height: 40px; //color: red;
+    position: absolute; //  transform: translate(0px, 0px);
+    transition: all 0.4s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.move {
+    transform: translate(100px, 100px);
 }
 
 .cell {
@@ -102,6 +143,7 @@ input:focus {
     justify-content: center;
     font-size: 40px;
     line-height: 40px;
+    transform: rotate(var(--rotateblack));
 }
 
 .cell:nth-child(-2n+8),

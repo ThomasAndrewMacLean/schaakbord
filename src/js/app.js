@@ -24,7 +24,25 @@ const iife = (function () {
         server = 'http://localhost:8080';
     }
 
+    document.querySelectorAll('.btn').forEach(element => {
 
+        element.onmousedown = (e) => {
+            const x = e.pageX - e.target.offsetLeft;
+            const y = e.pageY - e.target.offsetTop;
+
+            e.target.style.setProperty('--x', `${ x }px`);
+            e.target.style.setProperty('--y', `${ y }px`);
+        };
+
+        element.addEventListener('transitionend', (e) => {
+            console.log('end');
+            console.log(e);
+            if (e.propertyName === 'height') {
+                e.target.style.setProperty('--size', '0px');
+            }
+        }, false);
+
+    });
     globalData.board = document.querySelector('schaak-bord');
 
     const socket = io(server);
@@ -245,13 +263,28 @@ function goToOpenGames() {
             listdiv.innerHTML = innerHTML;
             document.querySelectorAll('.btn-click-open').forEach(dd => {
                 dd.addEventListener('click', goToGame);
+                dd.onmousedown = (e) => {
+                    const x = e.pageX - e.target.offsetLeft;
+                    const y = e.pageY - e.target.offsetTop;
+
+                    e.target.style.setProperty('--x', `${ x }px`);
+                    e.target.style.setProperty('--y', `${ y }px`);
+                };
+
+                dd.addEventListener('transitionend', (e) => {
+                    console.log('end');
+                    console.log(e);
+                    if (e.propertyName === 'height') {
+                        e.target.style.setProperty('--size', '0px');
+                    }
+                }, false);
 
             });
-            goToPage('openpage');
+
         });
 
     });
-
+    goToPage('openpage');
 
 }
 
@@ -382,12 +415,17 @@ function toastie(err) {
 function setUpBoard(game) {
     let players = [game.playerBlack, game.playerWhite];
 
-
     globalData.board.playerBlack = game.playerBlack;
     globalData.board.playerWhite = game.playerWhite;
     globalData.board.playerToPlay = players[game.moves.length % 2];
     globalData.board.board = game.moves.slice(-1).pop();
     globalData.board.reken.drawPieces(game.moves.slice(-1).pop());
+
+    if (globalData.user === game.playerBlack) {
+        document.querySelector('.wrapper').style.setProperty('--rotateblack', '180deg');
+    } else {
+        document.querySelector('.wrapper').style.setProperty('--rotateblack', '0deg');
+    }
 }
 
 function logonSucces(data) {
@@ -483,6 +521,7 @@ export class Schaakbord extends HTMLElement {
 
 
         // console.log(this.reken.getBoardNumber(i));
+        //console.log(c.innerHTML.charCodeAt(0).toString());
 
         let piece = Object.keys(this.pieces).find(x => {
             return this.pieces[x].substr(2, 4).toString() === c.innerHTML.charCodeAt(0).toString();
@@ -544,7 +583,13 @@ export class Schaakbord extends HTMLElement {
 
             document.querySelector('.selectedCell').classList.remove('selectedCell');
 
+
+
+
+
+
             this.stringNotation += ':' + i;
+            this.addFakePieceToAnimate(this.stringNotation, false);
             iife.sendMove(this.stringNotation);
             this.reken.removeCorrectMoveClassOnBoard();
             this.selectedPiece = null;
@@ -552,11 +597,110 @@ export class Schaakbord extends HTMLElement {
         }
     }
 
+    addFakePieceToAnimate(stringNotation, isAfterServer) {
+        let from = stringNotation.split(':')[0];
+        let to = stringNotation.split(':')[1];
+        //TODO animatie in gang zetten voor request naar server...
+
+
+        let piece = this.board[from];
+        if (isAfterServer) {
+            piece = this.board[to];
+        }
+        console.log(piece);
+        let div = document.createElement('div');
+        div.classList.add('piece');
+        div.innerHTML = piece;
+        div.left = 0;
+        div.bottom = 0;
+        let cellHeight = document.querySelector('.cell').clientHeight;
+
+        let kol = (from % 8);
+        let rij = Math.floor(from / 8);
+
+        if (this.playerBlack === globalData.user) {
+            kol = 7 - kol;
+            rij = 7 - rij;
+        }
+
+        let start = (-3.5 * cellHeight) + (kol * cellHeight);
+        let startRij = (-3.5 * cellHeight) + (rij * cellHeight);
+
+        div.style.transform = `translate(${start}px, ${startRij}px)`;
+
+        this.cells[from].innerHTML = '';
+        this.appendChild(div).focus();
+
+        let kolEind = (to % 8);
+        let rijEind = Math.floor(to / 8);
+
+        if (this.playerBlack === globalData.user) {
+            kolEind = 7 - kolEind;
+            rijEind = 7 - rijEind;
+        }
+        let startEind = (-3.5 * cellHeight) + (kolEind * cellHeight);
+        let startRijEind = (-3.5 * cellHeight) + (rijEind * cellHeight);
+
+        div.style.transform = `translate(${startEind}px, ${startRijEind}px)`;
+    }
     moveByNotation(not) {
         console.log(not);
         this.board = not.board;
         this.playerToPlay = not.nextPlayer;
-        this.reken.drawPieces(not.board);
+
+        if (!document.querySelector('.piece')) {
+            console.log('other player');
+            this.addFakePieceToAnimate(not.move, true);
+        }
+        document.querySelector('.piece').addEventListener('transitionend', () => {
+            this.removeChild(document.querySelector('.piece'));
+            this.reken.drawPieces(not.board);
+        });
+        // let from = not.move.split(':')[0];
+        // let to = not.move.split(':')[1];
+        // //TODO animatie in gang zetten voor request naar server...
+        // this.cells[from].innerHTML = '';
+
+        // let piece = this.board[to];
+        // console.log(piece);
+
+        // let div = document.createElement('div');
+        // div.classList.add('piece');
+        // div.innerHTML = piece;
+        // div.left = 0;
+        // div.bottom = 0;
+        // let cellHeight = document.querySelector('.cell').clientHeight;
+        // console.log('cellHeight ' + cellHeight);
+
+        // let kol = (from % 8);
+        // let rij = Math.floor(from / 8);
+
+        // if (this.playerBlack === globalData.user) {
+        //     kol = 7 - kol;
+        //     rij = 7 - rij;
+        // }
+
+        // let start = (-3.5 * cellHeight) + (kol * cellHeight);
+        // let startRij = (-3.5 * cellHeight) + (rij * cellHeight);
+
+        // div.style.transform = `translate(${start}px, ${startRij}px)`;
+
+        // this.appendChild(div).focus();
+
+        // let kolEind = (to % 8);
+        // let rijEind = Math.floor(to / 8);
+
+        // if (this.playerBlack === globalData.user) {
+        //     kolEind = 7 - kolEind;
+        //     rijEind = 7 - rijEind;
+        // }
+        // let startEind = (-3.5 * cellHeight) + (kolEind * cellHeight);
+        // let startRijEind = (-3.5 * cellHeight) + (rijEind * cellHeight);
+
+        // div.style.transform = `translate(${startEind}px, ${startRijEind}px)`;
+        //   div.addEventListener('transitionend', () => {
+
+        //  });
     }
 
 
@@ -572,6 +716,8 @@ export class Schaakbord extends HTMLElement {
             wrapper.appendChild(d);
         });
         let selectedPiece = null;
+
+        this.cells = this.querySelectorAll('.cell');
     }
 }
 

@@ -1,2 +1,2 @@
 chess@1.0.0
-Build date: Sun Mar 11 2018 15:57:03 GMT+0100 (CET)
+Build date: Tue Mar 13 2018 04:04:11 GMT+0100 (CET)
